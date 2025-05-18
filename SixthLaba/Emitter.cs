@@ -16,7 +16,7 @@ namespace SixthLaba
         public float GravitationX = 0;
         public float GravitationY = 0; // пусть гравитация будет силой один пиксель за такт, нам хватит
 
-        public List<Point> gravityPoints = new List<Point>(); // тут буду хранится точки притяжения
+        public List<IImpactPoint> impactPoints = new List<IImpactPoint>(); // тут буду хранится точки притяжения
 
         // добавил функцию обновления состояния системы
         public void UpdateState()
@@ -61,9 +61,9 @@ namespace SixthLaba
                     float gY = gravityPoints[0].Y - particle.Y;*/
 
                     // каждая точка по-своему воздействует на вектор скорости
-                    foreach (var point in gravityPoints)
+                    foreach (var point in impactPoints)
                     {
-                        float gX = point.X - particle.X;
+                        /*float gX = point.X - particle.X;
                         float gY = point.Y - particle.Y;
 
                         // считаем квадрат расстояния между частицей и точкой r^2
@@ -72,7 +72,9 @@ namespace SixthLaba
 
                         // пересчитываем вектор скорости с учетом притяжения к точке
                         particle.SpeedX += (gX) * M / r2;
-                        particle.SpeedY += (gY) * M / r2;
+                        particle.SpeedY += (gY) * M / r2;*/
+
+                        point.ImpactParticle(particle);
                     }
 
                     // гравитация воздействует на вектор скорости, поэтому пересчитываем его
@@ -118,16 +120,64 @@ namespace SixthLaba
             }
 
             // рисую точки притяжения красными кружочками
-            foreach (var point in gravityPoints)
+            foreach (var point in impactPoints)
             {
-                g.FillEllipse(
+                point.Render(g);
+            }
+        }
+    }
+
+    public abstract class IImpactPoint
+    {
+        public float X; // ну точка же, вот и две координаты
+        public float Y;
+
+        // абстрактный метод с помощью которого будем изменять состояние частиц
+        // например притягивать
+        public abstract void ImpactParticle(Particle particle);
+
+        // базовый класс для отрисовки точечки
+        public void Render(Graphics g)
+        {
+            g.FillEllipse(
                     new SolidBrush(Color.Red),
-                    point.X - 5,
-                    point.Y - 5,
+                    X - 5,
+                    Y - 5,
                     10,
                     10
                 );
-            }
+        }
+    }
+
+    public class GravityPoint : IImpactPoint
+    {
+        public int Power = 100; // сила притяжения
+
+        // а сюда по сути скопировали с минимальными правками то что было в UpdateState
+        public override void ImpactParticle(Particle particle)
+        {
+            float gX = X - particle.X;
+            float gY = Y - particle.Y;
+            float r2 = (float)Math.Max(100, gX * gX + gY * gY);
+
+            particle.SpeedX += gX * Power / r2;
+            particle.SpeedY += gY * Power / r2;
+        }
+    }
+
+    public class AntiGravityPoint : IImpactPoint
+    {
+        public int Power = 100; // сила отторжения
+
+        // а сюда по сути скопировали с минимальными правками то что было в UpdateState
+        public override void ImpactParticle(Particle particle)
+        {
+            float gX = X - particle.X;
+            float gY = Y - particle.Y;
+            float r2 = (float)Math.Max(100, gX * gX + gY * gY);
+
+            particle.SpeedX -= gX * Power / r2; // тут минусики вместо плюсов
+            particle.SpeedY -= gY * Power / r2; // и тут
         }
     }
 }
