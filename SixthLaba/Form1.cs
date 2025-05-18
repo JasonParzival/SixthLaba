@@ -33,29 +33,58 @@ namespace SixthLaba
             }
         }
 
-        int counter = 0; // добавлю счетчик чтобы считать вызовы функции
+        // добавил функцию обновления состояния системы
+        private void UpdateState()
+        {
+            foreach (var particle in particles)
+            {
+                particle.Life -= 1; // уменьшаю здоровье
+                                    // если здоровье кончилось
+                if (particle.Life < 0)
+                {
+                    // восстанавливаю здоровье
+                    particle.Life = 20 + Particle.rand.Next(100);
+                    // перемещаю частицу в центр
+                    particle.X = picDisplay.Image.Width / 2;
+                    particle.Y = picDisplay.Image.Height / 2;
+
+                    // делаю рандомное направление, скорость и размер
+                    particle.Direction = Particle.rand.Next(360);
+                    particle.Speed = 1 + Particle.rand.Next(10);
+                    particle.Radius = 2 + Particle.rand.Next(10);
+                }
+                else
+                {
+                    // а это наш старый код
+                    var directionInRadians = particle.Direction / 180 * Math.PI;
+                    particle.X += (float)(particle.Speed * Math.Cos(directionInRadians));
+                    particle.Y -= (float)(particle.Speed * Math.Sin(directionInRadians));
+                }
+            }
+        }
+
+        // функция рендеринга
+        private void Render(Graphics g)
+        {
+            // утащили сюда отрисовку частиц
+            foreach (var particle in particles)
+            {
+                particle.Draw(g);
+            }
+        }
+
+        // ну и обработка тика таймера, тут просто декомпозицию выполнили
         private void timer1_Tick(object sender, EventArgs e)
         {
-            counter++; // увеличиваю значение счетчика каждый вызов
+            UpdateState(); // каждый тик обновляем систему
+
             using (var g = Graphics.FromImage(picDisplay.Image))
             {
-                g.Clear(Color.White); // добавил очистку
-                // рисую на изображении сколько насчитал
-                g.DrawString(
-                    counter.ToString(), // значения счетчика в виде строки
-                    new Font("Arial", 12), // шрифт
-                    new SolidBrush(Color.Black), // цвет
-                    new PointF
-                    { // по центру экрана
-                        X = picDisplay.Image.Width / 2,
-                        Y = picDisplay.Image.Height / 2
-                    }
-                );
+                g.Clear(Color.White);
+                Render(g); // рендерим систему
             }
 
-            // обновить picDisplay
             picDisplay.Invalidate();
-
         }
     }
 }
