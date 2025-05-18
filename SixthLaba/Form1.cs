@@ -12,13 +12,22 @@ namespace SixthLaba
 {
     public partial class Form1 : Form
     {
-        Emitter emitter = new Emitter(); // добавили эмиттер
+        Emitter emitter;
         public Form1()
         {
             InitializeComponent();
 
             // привязал изображение
             picDisplay.Image = new Bitmap(picDisplay.Width, picDisplay.Height);
+
+            // а тут теперь вручную создаем
+            emitter = new TopEmitter
+            {
+                Width = picDisplay.Width,
+                GravitationY = 0.25f
+            };
+
+            /* пока отключим точки
 
             // гравитон
             emitter.impactPoints.Add(new GravityPoint
@@ -39,7 +48,7 @@ namespace SixthLaba
             {
                 X = (float)(picDisplay.Width * 0.75),
                 Y = picDisplay.Height / 2
-            });
+            });*/
         }
 
         
