@@ -98,6 +98,13 @@ namespace SixthLaba
                     /*float gX = gravityPoints[0].X - particle.X;
                     float gY = gravityPoints[0].Y - particle.Y;*/
 
+                    // и добавляем новый, собственно он даже проще становится, 
+                    // так как теперь мы храним вектор скорости в явном виде и его не надо пересчитывать
+                    particle.X += particle.SpeedX;
+                    particle.Y += particle.SpeedY;
+
+
+                    particle.Life -= 1;
                     // каждая точка по-своему воздействует на вектор скорости
                     foreach (var point in impactPoints)
                     {
@@ -119,10 +126,7 @@ namespace SixthLaba
                     particle.SpeedX += GravitationX;
                     particle.SpeedY += GravitationY;
 
-                    // и добавляем новый, собственно он даже проще становится, 
-                    // так как теперь мы храним вектор скорости в явном виде и его не надо пересчитывать
-                    particle.X += particle.SpeedX;
-                    particle.Y += particle.SpeedY;
+                    
                 }
             }
 
@@ -229,10 +233,15 @@ namespace SixthLaba
         {
             float gX = X - particle.X;
             float gY = Y - particle.Y;
-            float r2 = (float)Math.Max(100, gX * gX + gY * gY);
 
-            particle.SpeedX += gX * Power / r2;
-            particle.SpeedY += gY * Power / r2;
+            double r = Math.Sqrt(gX * gX + gY * gY); // считаем расстояние от центра точки до центра частицы
+            if (r + particle.Radius < Power / 2) // если частица оказалось внутри окружности
+            {
+                // то притягиваем ее
+                float r2 = (float)Math.Max(100, gX * gX + gY * gY);
+                particle.SpeedX += gX * Power / r2;
+                particle.SpeedY += gY * Power / r2;
+            }
         }
 
         public override void Render(Graphics g)
