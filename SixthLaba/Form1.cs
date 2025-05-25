@@ -15,15 +15,14 @@ namespace SixthLaba
         List<Emitter> emitters = new List<Emitter>();
         Emitter emitter; // добавим поле для эмиттера
 
-        GravityPoint point1; // добавил поле под первую точку
-        GravityPoint point2; // добавил поле под вторую точку
+        List<CounterPoint> counterPoints = new List<CounterPoint>();
 
         public Form1()
         {
             InitializeComponent();
             picDisplay.Image = new Bitmap(picDisplay.Width, picDisplay.Height);
 
-            this.emitter = new Emitter // создаю эмиттер и привязываю его к полю emitter
+            this.emitter = new Emitter 
             {
                 Direction = 0,
                 Spreading = 6,
@@ -36,28 +35,9 @@ namespace SixthLaba
                 Y = picDisplay.Height / 2,
             };
 
-            emitters.Add(this.emitter); // все равно добавляю в список emitters, чтобы он рендерился и обновлялся
-
-            // привязываем гравитоны к полям
-            point1 = new GravityPoint
-            {
-                X = picDisplay.Width / 2 + 100,
-                Y = picDisplay.Height / 2,
-            };
-            point2 = new GravityPoint
-            {
-                X = picDisplay.Width / 2 - 100,
-                Y = picDisplay.Height / 2,
-            };
-
-            // привязываем поля к эмиттеру
-            emitter.impactPoints.Add(point1);
-            emitter.impactPoints.Add(point2);
+            emitters.Add(this.emitter); 
         }
 
-        
-
-        // ну и обработка тика таймера, тут просто декомпозицию выполнили
         private void timer1_Tick(object sender, EventArgs e)
         {
             emitter.UpdateState(); // тут теперь обновляем эмиттер
@@ -66,24 +46,14 @@ namespace SixthLaba
             {
                 g.Clear(Color.Black); // А ЕЩЕ ЧЕРНЫЙ ФОН СДЕЛАЮ
                 emitter.Render(g); // а тут теперь рендерим через эмиттер
+
+                foreach (var counter in counterPoints)
+                {
+                    counter.Render(g);
+                }
             }
 
             picDisplay.Invalidate();
-        }
-
-        // добавляем переменные для хранения положения мыши
-        private int MousePositionX = 0;
-        private int MousePositionY = 0;
-
-        private void picDisplay_MouseMove(object sender, MouseEventArgs e)
-        {
-            // а тут в эмиттер передаем положение мыфки
-            emitter.MousePositionX = e.X;
-            emitter.MousePositionY = e.Y;
-
-            // а тут передаем положение мыши, в положение гравитона
-            point2.X = e.X;
-            point2.Y = e.Y;
         }
 
         private void tbDirection_Scroll(object sender, EventArgs e)
@@ -92,14 +62,33 @@ namespace SixthLaba
             lblDirection.Text = $"{tbDirection.Value}°"; // добавил вывод значения
         }
 
-        private void tbGraviton_Scroll(object sender, EventArgs e)
+        private void picDisplay_MouseClick(object sender, MouseEventArgs e)
         {
-            point1.Power = tbGraviton.Value;
-        }
+            if (e.Button == MouseButtons.Left)
+            {
+                var counter = new CounterPoint
+                {
+                    X = e.X,
+                    Y = e.Y,
+                };
+                counterPoints.Add(counter);
+                emitter.impactPoints.Add(counter);
+            }
+            else if (e.Button == MouseButtons.Right)
+            {
+                // От конца списка счетчиков
+                for (int i = counterPoints.Count - 1; i >= 0; i--)
+                {
+                    var point = counterPoints[i];
 
-        private void tbGraviton2_Scroll(object sender, EventArgs e)
-        {
-            point2.Power = tbGraviton2.Value;
+                    if (Math.Abs(point.X - e.X) < 30 && Math.Abs(point.Y - e.Y) < 30)
+                    {
+                        counterPoints.Remove(point);
+                        emitter.impactPoints.Remove(point);
+                        break;
+                    }
+                }
+            }
         }
     }
 }

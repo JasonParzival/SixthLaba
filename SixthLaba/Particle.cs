@@ -32,7 +32,6 @@ namespace SixthLaba
             SpeedX = (float)(Math.Cos(direction / 180 * Math.PI) * speed);
             SpeedY = -(float)(Math.Sin(direction / 180 * Math.PI) * speed);
 
-            // а это не трогаем
             Radius = 2 + rand.Next(10);
             Life = 20 + rand.Next(100);
         }
@@ -75,7 +74,6 @@ namespace SixthLaba
             );
         }
 
-        // ну и отрисовку перепишем
         public override void Draw(Graphics g)
         {
             float k = Math.Min(1f, Life / 100);
